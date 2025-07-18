@@ -5,15 +5,8 @@
     "buildCommand": "npm run build"
   },
   "deploy": {
-    "startCommand": "npm install -g serve && serve -s build -l $PORT",
+    "startCommand": "npm run serve",
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "healthcheckPath": "/",
-    "healthcheckTimeout": 100
-  },
-  "envVars": {
-    "NODE_ENV": {
-      "value": "production"
-    }
+    "restartPolicyMaxRetries": 10
   }
 }
