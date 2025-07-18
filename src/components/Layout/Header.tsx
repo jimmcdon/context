@@ -9,7 +9,8 @@ import {
   PanelRight,
   RotateCcw,
   Play,
-  Calendar
+  Calendar,
+  GraduationCap
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -22,6 +23,7 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onOpenEngage: () => void;
   onOpenToday: () => void;
+  onOpenOnboarding?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,7 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
   onStartReview,
   onOpenSettings,
   onOpenEngage,
-  onOpenToday
+  onOpenToday,
+  onOpenOnboarding
 }) => {
   return (
     <header className="h-12 bg-cursor-sidebar border-b border-cursor-border flex items-center justify-between px-4 flex-shrink-0">
@@ -114,6 +117,16 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Settings size={16} />
         </button>
+        
+        {onOpenOnboarding && (
+          <button 
+            onClick={onOpenOnboarding}
+            className="p-1.5 rounded hover:bg-cursor-bg transition-colors text-cursor-text-muted hover:text-cursor-accent"
+            title="GTD Training"
+          >
+            <GraduationCap size={16} />
+          </button>
+        )}
         
         <button className="p-1.5 rounded hover:bg-cursor-bg transition-colors text-cursor-text-muted hover:text-cursor-accent">
           <User size={16} />

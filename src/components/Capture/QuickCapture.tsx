@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Mic, MicOff } from 'lucide-react';
+import { VoiceCapture, VoiceMetadata } from './VoiceCapture';
 
 interface QuickCaptureProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ export const QuickCapture: React.FC<QuickCaptureProps> = ({
   onCapture
 }) => {
   const [content, setContent] = useState('');
-  const [isListening, setIsListening] = useState(false);
+  const [showVoiceCapture, setShowVoiceCapture] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -59,10 +60,24 @@ export const QuickCapture: React.FC<QuickCaptureProps> = ({
   }, [isOpen, onClose, handleSubmit]);
 
 
-  const toggleVoiceRecording = () => {
-    setIsListening(!isListening);
-    // TODO: Implement voice recognition
-    console.log('Voice recording:', !isListening);
+  const handleVoiceCapture = (voiceContent: string, metadata?: VoiceMetadata) => {
+    setContent(voiceContent);
+    setShowVoiceCapture(false);
+    
+    // Auto-capture if we have good confidence and smart parsing
+    if (metadata && metadata.confidence > 0.8 && (metadata.detectedContext || metadata.detectedEnergy)) {
+      onCapture(voiceContent, {
+        source: 'voice',
+        timestamp: new Date(),
+        ...metadata
+      });
+      setContent('');
+      onClose();
+    }
+  };
+
+  const toggleVoiceCapture = () => {
+    setShowVoiceCapture(true);
   };
 
   if (!isOpen) return null;
@@ -72,7 +87,7 @@ export const QuickCapture: React.FC<QuickCaptureProps> = ({
       <div className="bg-cursor-sidebar border border-cursor-border rounded-lg shadow-2xl w-full max-w-md mx-4">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-cursor-border">
-          <h3 className="text-lg font-medium text-cursor-text">Quick Capture</h3>
+          <h3 className="text-lg font-medium text-cursor-text">Capture Ideas</h3>
           <button
             onClick={onClose}
             className="p-1 hover:bg-cursor-bg rounded transition-colors text-cursor-text-muted hover:text-cursor-text"
@@ -87,7 +102,7 @@ export const QuickCapture: React.FC<QuickCaptureProps> = ({
             ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What's on your mind? Get it out of your head..."
+            placeholder="What idea is on your mind? Capture it here..."
             className="w-full bg-cursor-bg border border-cursor-border rounded-md p-3 text-cursor-text placeholder-cursor-text-muted resize-none focus:outline-none focus:border-cursor-accent"
             rows={4}
           />
@@ -95,19 +110,15 @@ export const QuickCapture: React.FC<QuickCaptureProps> = ({
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
-                onClick={toggleVoiceRecording}
-                className={`p-2 rounded transition-colors ${
-                  isListening
-                    ? 'bg-red-500 text-white'
-                    : 'bg-cursor-bg text-cursor-text-muted hover:text-cursor-text'
-                }`}
+                onClick={toggleVoiceCapture}
+                className="p-2 rounded transition-colors bg-cursor-bg text-cursor-text-muted hover:text-cursor-text hover:bg-cursor-border"
                 title="Voice input"
               >
-                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                <Mic size={16} />
               </button>
               
               <span className="text-xs text-cursor-text-muted">
-                {isListening ? 'Listening...' : 'Cmd+Shift+A'}
+                Cmd+Shift+A
               </span>
             </div>
 
@@ -134,6 +145,14 @@ export const QuickCapture: React.FC<QuickCaptureProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Voice Capture Modal */}
+      <VoiceCapture
+        isOpen={showVoiceCapture}
+        onClose={() => setShowVoiceCapture(false)}
+        onCapture={handleVoiceCapture}
+        placeholder="Speak your idea..."
+      />
     </div>
   );
 };

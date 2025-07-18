@@ -41,7 +41,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   const gtdSections: SidebarItem[] = [
     {
       id: 'inbox',
-      label: 'Inbox',
+      label: 'Ideas',
       icon: <Inbox size={16} />,
       count: inboxCount,
       isActive: activeView === 'inbox'

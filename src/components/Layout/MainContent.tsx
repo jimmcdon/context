@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, Search, Filter, MoreHorizontal, ArrowRight } from 'lucide-react';
 import { useGTDStore } from '../../store/gtdStore';
+import { ProjectsView } from '../Projects/ProjectsView';
 
 interface MainContentProps {
   activeView: string;
@@ -17,7 +18,7 @@ export const MainContent: React.FC<MainContentProps> = ({
   const items = getItemsByView(activeView);
   const getViewTitle = (view: string) => {
     const titles: { [key: string]: string } = {
-      'inbox': 'Inbox',
+      'inbox': 'Ideas',
       'next-actions': 'Next Actions',
       'projects': 'Projects',
       'waiting-for': 'Waiting For',
@@ -49,7 +50,7 @@ export const MainContent: React.FC<MainContentProps> = ({
 
   const getViewDescription = (view: string) => {
     const descriptions: { [key: string]: string } = {
-      'inbox': 'Capture and process all your open loops. Apply the two-minute rule and clarify each item.',
+      'inbox': 'Capture and process all your ideas and open loops. Apply the two-minute rule and clarify each idea.',
       'next-actions': 'Single-step actions organized by context. Choose based on time, energy, and priority.',
       'projects': 'Multi-step commitments with defined outcomes. Each project needs a next action.',
       'waiting-for': 'Items delegated to others or dependent on external factors. Review regularly.',
@@ -72,6 +73,11 @@ export const MainContent: React.FC<MainContentProps> = ({
     e.stopPropagation();
     completeItem(itemId);
   };
+
+  // Special handling for projects view
+  if (activeView === 'projects') {
+    return <ProjectsView />;
+  }
 
   return (
     <div className="h-full flex flex-col bg-cursor-bg">
@@ -96,7 +102,7 @@ export const MainContent: React.FC<MainContentProps> = ({
               className="flex items-center gap-2 bg-cursor-accent text-white px-4 py-2 rounded-md hover:bg-cursor-accent/90 transition-colors"
             >
               <Plus size={16} />
-              <span>Add Item</span>
+              <span>Capture Idea</span>
             </button>
           </div>
         </div>
@@ -114,11 +120,11 @@ export const MainContent: React.FC<MainContentProps> = ({
                 <Plus size={32} className="text-cursor-accent" />
               </div>
               <h3 className="text-lg font-medium text-cursor-text mb-2">
-                {activeView === 'inbox' ? 'Your inbox is empty!' : `No ${getViewTitle(activeView).toLowerCase()} found`}
+                {activeView === 'inbox' ? 'No ideas captured yet!' : `No ${getViewTitle(activeView).toLowerCase()} found`}
               </h3>
               <p className="text-cursor-text-muted mb-6">
                 {activeView === 'inbox' 
-                  ? 'Capture everything that has your attention. Get it out of your head and into your trusted system.'
+                  ? 'Capture all your ideas and thoughts. Get them out of your head and into your trusted system.'
                   : 'Great job! This list is clear. Focus on your current priorities.'
                 }
               </p>
@@ -127,7 +133,7 @@ export const MainContent: React.FC<MainContentProps> = ({
                   onClick={onQuickCapture}
                   className="bg-cursor-accent text-white px-6 py-3 rounded-md hover:bg-cursor-accent/90 transition-colors"
                 >
-                  Capture Something
+                  Capture Ideas
                 </button>
               )}
             </div>

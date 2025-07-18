@@ -1,6 +1,14 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "name": "GTD - Getting Things Done",
+  "short_name": "GTD App",
+  "description": "A comprehensive Getting Things Done productivity application",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#3b82f6",
+  "background_color": "#0f1419",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["productivity", "lifestyle", "utilities"],
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +18,54 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "shortcuts": [
+    {
+      "name": "Quick Capture",
+      "short_name": "Capture",
+      "description": "Quickly capture a new idea",
+      "url": "/?action=capture",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Today's Focus",
+      "short_name": "Today",
+      "description": "View today's dashboard",
+      "url": "/?action=today",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Engage Mode",
+      "short_name": "Engage",
+      "description": "Filter actions by context",
+      "url": "/?action=engage",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "lang": "en-US",
+  "dir": "ltr"
 }

@@ -13,8 +13,10 @@ import {
   TrendingUp,
   BookOpen,
   List,
-  Columns
+  Columns,
+  Mic
 } from 'lucide-react';
+import { VoiceCapture, VoiceMetadata } from '../Capture/VoiceCapture';
 import { useGTDStore } from '../../store/gtdStore';
 import { TaskKanban } from './TaskKanban';
 
@@ -33,11 +35,26 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
     removeFromToday,
     setDailyNotes,
     startTask,
-    pauseTask
+    pauseTask,
+    updateTaskTime,
+    addItem
   } = useGTDStore();
+
 
   const [showTaskSelector, setShowTaskSelector] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban');
+  const [showVoiceCapture, setShowVoiceCapture] = useState(false);
+
+  // Voice capture handler
+  const handleVoiceCapture = useCallback((content: string, metadata?: VoiceMetadata) => {
+    const newIdeaId = addItem(content, {
+      source: 'voice',
+      timestamp: new Date(),
+      ...metadata
+    });
+    addToToday(newIdeaId);
+    setShowVoiceCapture(false);
+  }, [addItem, addToToday]);
 
   // Get today's date info (memoized to prevent unnecessary re-renders)
   const today = useMemo(() => new Date(), []);
@@ -142,7 +159,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-cursor-text flex items-center gap-2">
                     <Target size={20} className="text-cursor-accent" />
-                    Today's Tasks ({todayTasks.length})
+                    Today's Ideas ({todayTasks.length})
                   </h3>
                   <div className="flex items-center gap-2">
                     {/* View Toggle */}
@@ -162,41 +179,112 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
                         <Columns size={16} />
                       </button>
                     </div>
-                    <button
-                      onClick={() => setShowTaskSelector(!showTaskSelector)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-cursor-accent text-white rounded hover:bg-cursor-accent/90 transition-colors text-sm"
-                    >
-                      <Plus size={16} />
-                      Add Task
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowVoiceCapture(true)}
+                        className="p-1.5 bg-cursor-sidebar text-cursor-text-muted hover:text-cursor-text hover:bg-cursor-border rounded transition-colors"
+                        title="Voice capture"
+                      >
+                        <Mic size={16} />
+                      </button>
+                      <button
+                        onClick={() => setShowTaskSelector(!showTaskSelector)}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-cursor-accent text-white rounded hover:bg-cursor-accent/90 transition-colors text-sm"
+                      >
+                        <Plus size={16} />
+                        Capture Idea
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Task Selector */}
                 {showTaskSelector && (
                   <div className="mb-4 p-3 bg-cursor-sidebar border border-cursor-border rounded">
-                    <h4 className="text-sm font-medium text-cursor-text mb-2">Available Tasks</h4>
-                    <div className="max-h-32 overflow-y-auto space-y-1">
-                      {availableTasks.slice(0, 10).map((task) => (
-                        <button
-                          key={task.id}
-                          onClick={() => {
-                            handleAddTaskToToday(task.id);
-                            setShowTaskSelector(false);
-                          }}
-                          className="w-full text-left p-2 hover:bg-cursor-bg rounded text-sm text-cursor-text flex items-center gap-2"
-                        >
-                          <Plus size={12} />
-                          {task.content}
-                          {task.contextId && (
-                            <span className="text-cursor-text-muted text-xs">@{task.contextId}</span>
-                          )}
-                        </button>
-                      ))}
-                      {availableTasks.length === 0 && (
-                        <p className="text-cursor-text-muted text-sm">No available tasks</p>
-                      )}
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium text-cursor-text">Add Ideas to Today</h4>
+                      <button
+                        onClick={() => setShowTaskSelector(false)}
+                        className="text-cursor-text-muted hover:text-cursor-text"
+                      >
+                        ✕
+                      </button>
                     </div>
+
+                    {/* Quick add new task */}
+                    <div className="mb-3 p-2 bg-cursor-bg border border-cursor-border rounded">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Plus size={14} className="text-cursor-accent" />
+                        <span className="text-sm font-medium text-cursor-text">Create New Idea</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Enter a new idea..."
+                          className="flex-1 bg-cursor-sidebar border border-cursor-border rounded px-2 py-1 text-sm text-cursor-text placeholder-cursor-text-muted focus:outline-none focus:border-cursor-accent"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                              // Create new idea and add to today
+                              const content = e.currentTarget.value.trim();
+                              
+                              // Add to store and get the new idea ID
+                              const newIdeaId = addItem(content);
+                              
+                              // Add to today
+                              addToToday(newIdeaId);
+                              
+                              e.currentTarget.value = '';
+                              setShowTaskSelector(false);
+                            }
+                          }}
+                        />
+                        <button
+                          onClick={(e) => {
+                            const input = e.currentTarget.parentElement?.querySelector('input');
+                            if (input && input.value.trim()) {
+                              const content = input.value.trim();
+                              
+                              // Add to store and get the new idea ID
+                              const newIdeaId = addItem(content);
+                              
+                              // Add to today
+                              addToToday(newIdeaId);
+                              
+                              input.value = '';
+                              setShowTaskSelector(false);
+                            }
+                          }}
+                          className="px-3 py-1 bg-cursor-accent text-white rounded text-sm hover:bg-cursor-accent/90 transition-colors"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Existing tasks */}
+                    {availableTasks.length > 0 && (
+                      <>
+                        <div className="text-xs text-cursor-text-muted mb-2">Or select from existing ideas:</div>
+                        <div className="max-h-32 overflow-y-auto space-y-1">
+                          {availableTasks.slice(0, 10).map((task) => (
+                            <button
+                              key={task.id}
+                              onClick={() => {
+                                handleAddTaskToToday(task.id);
+                                setShowTaskSelector(false);
+                              }}
+                              className="w-full text-left p-2 hover:bg-cursor-bg rounded text-sm text-cursor-text flex items-center gap-2"
+                            >
+                              <Plus size={12} />
+                              {task.content}
+                              {task.contextId && (
+                                <span className="text-cursor-text-muted text-xs">@{task.contextId}</span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -209,6 +297,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
                       onPauseTask={pauseTask}
                       onCompleteTask={handleCompleteTask}
                       onRemoveFromToday={handleRemoveTaskFromToday}
+                      onUpdateTaskTime={updateTaskTime}
                     />
                   </div>
                 ) : (
@@ -268,12 +357,12 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
                     
                     {todayTasks.length === 0 && (
                       <div className="text-center py-8">
-                        <p className="text-cursor-text-muted mb-2">No tasks planned for today</p>
+                        <p className="text-cursor-text-muted mb-2">No ideas planned for today</p>
                         <button
                           onClick={() => setShowTaskSelector(true)}
                           className="text-cursor-accent hover:underline"
                         >
-                          Add some tasks to get started
+                          Add some ideas to get started
                         </button>
                       </div>
                     )}
@@ -306,7 +395,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
                 </h3>
                 <div className="space-y-2">
                   <p className="text-sm text-cursor-text-muted">
-                    Completed {yesterdayCompleted.length} tasks
+                    Completed {yesterdayCompleted.length} ideas
                   </p>
                   {yesterdayCompleted.slice(0, 3).map((task) => (
                     <div key={task.id} className="flex items-center gap-2 text-sm">
@@ -320,7 +409,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
                     </p>
                   )}
                   {yesterdayCompleted.length === 0 && (
-                    <p className="text-sm text-cursor-text-muted">No tasks completed</p>
+                    <p className="text-sm text-cursor-text-muted">No ideas completed</p>
                   )}
                 </div>
               </div>
@@ -330,7 +419,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
                 <h3 className="text-lg font-medium text-cursor-text mb-4">Today's Summary</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-cursor-text-muted">Planned Tasks</span>
+                    <span className="text-cursor-text-muted">Planned Ideas</span>
                     <span className="text-cursor-text font-medium">{todayTasks.length}</span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -376,6 +465,14 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({ isOpen, onClose 
           </div>
         </div>
       </div>
+
+      {/* Voice Capture Modal */}
+      <VoiceCapture
+        isOpen={showVoiceCapture}
+        onClose={() => setShowVoiceCapture(false)}
+        onCapture={handleVoiceCapture}
+        placeholder="Speak your idea for today..."
+      />
     </div>
   );
 };

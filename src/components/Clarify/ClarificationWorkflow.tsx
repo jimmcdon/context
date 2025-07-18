@@ -12,9 +12,11 @@ import {
   Zap,
   Brain,
   Battery,
-  Coffee
+  Coffee,
+  Timer
 } from 'lucide-react';
 import { GTDItem, ProcessingDecision } from '../../types/gtd';
+import { TwoMinuteTimer } from '../Timer/TwoMinuteTimer';
 
 interface ClarificationWorkflowProps {
   item: GTDItem;
@@ -36,6 +38,7 @@ export const ClarificationWorkflow: React.FC<ClarificationWorkflowProps> = ({
   });
   const [estimatedMinutes, setEstimatedMinutes] = useState<number | undefined>(undefined);
   const [energyRequired, setEnergyRequired] = useState<'high' | 'medium' | 'low' | 'zombie'>('medium');
+  const [showTwoMinuteTimer, setShowTwoMinuteTimer] = useState(false);
 
   const handleActionableDecision = useCallback((isActionable: boolean) => {
     setDecision(prev => ({ ...prev, isActionable }));
@@ -55,7 +58,7 @@ export const ClarificationWorkflow: React.FC<ClarificationWorkflowProps> = ({
     }));
     
     if (actionType === 'do-now') {
-      setCurrentStep('confirm');
+      setShowTwoMinuteTimer(true);
     } else {
       setCurrentStep('time-energy');
     }
@@ -76,6 +79,24 @@ export const ClarificationWorkflow: React.FC<ClarificationWorkflowProps> = ({
     }));
     setCurrentStep('context');
   }, [estimatedMinutes, energyRequired]);
+
+  const handleTwoMinuteTimerComplete = useCallback((success: boolean, timeSpent: number) => {
+    setShowTwoMinuteTimer(false);
+    
+    if (success) {
+      // Task completed within 2 minutes - mark as done
+      onDecision({
+        ...decision,
+        actionType: 'do-now',
+        isActionable: true,
+        estimatedMinutes: Math.round(timeSpent / 60),
+        notes: `Completed in ${Math.round(timeSpent / 60)} minutes using 2-minute rule`
+      } as ProcessingDecision);
+    } else {
+      // Task not completed - continue with normal workflow
+      setCurrentStep('time-energy');
+    }
+  }, [decision, onDecision]);
 
   const handleContextSelection = useCallback((contextId: string) => {
     setDecision(prev => ({ ...prev, contextId }));
@@ -557,6 +578,14 @@ export const ClarificationWorkflow: React.FC<ClarificationWorkflowProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Two Minute Timer */}
+      <TwoMinuteTimer
+        isOpen={showTwoMinuteTimer}
+        onClose={() => setShowTwoMinuteTimer(false)}
+        onComplete={handleTwoMinuteTimerComplete}
+        initialIdea={item.content}
+      />
     </div>
   );
 };

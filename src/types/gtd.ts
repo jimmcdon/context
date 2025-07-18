@@ -1,4 +1,4 @@
-export interface GTDItem {
+export interface GTDIdea {
   id: string;
   content: string;
   type: 'inbox' | 'action' | 'project' | 'reference' | 'someday-maybe' | 'waiting-for';
@@ -18,25 +18,33 @@ export interface GTDItem {
   isNextAction: boolean;
   inProgress?: boolean;
   startedAt?: Date;
+  elapsedTime?: number; // in seconds
+  actualMinutes?: number; // total time spent when completed
   // Add urgency and importance for dynamic priority calculation
   isUrgent?: boolean;
   isImportant?: boolean;
 }
 
+// Backward compatibility alias
+export type GTDItem = GTDIdea;
+
 export interface Project {
   id: string;
   title: string;
-  outcome: string;
+  outcome: string; // Clear vision of successful completion
   description?: string;
   status: 'active' | 'completed' | 'cancelled' | 'on-hold' | 'someday-maybe';
   areaOfFocusId?: string;
-  horizon: 1 | 2 | 3 | 4 | 5;
+  horizon: 1 | 2 | 3 | 4 | 5; // GTD Horizons of Focus
   createdAt: Date;
   updatedAt: Date;
   dueDate?: Date;
   completedDate?: Date;
-  nextActionId?: string;
+  nextActionId?: string; // Current next action for this project
   isMultiStep: boolean;
+  progress?: number; // 0-100 percentage
+  estimatedHours?: number;
+  actualHours?: number;
 }
 
 export interface Context {
@@ -146,4 +154,106 @@ export interface EngageDecision {
   timeAvailable: number;       // Minutes available
   energyLevel: 'high' | 'medium' | 'low' | 'zombie';
   focusArea?: string;          // Optional area of focus filter
+}
+
+// Weekly Review Types
+export interface WeeklyReviewMetrics {
+  // Capture metrics
+  ideasCaptured: number;
+  inboxProcessed: number;
+  inboxProcessingRate: number; // percentage
+
+  // Clarify metrics
+  ideasClarified: number;
+  actionableRate: number; // percentage of ideas that became actionable
+  avgProcessingTime: number; // minutes per idea
+
+  // Organize metrics
+  projectsActive: number;
+  projectsCompleted: number;
+  projectsStuck: number; // projects without next actions
+  contextDistribution: Record<string, number>;
+
+  // Engage metrics
+  ideasCompleted: number;
+  completionRate: number; // percentage of planned actions completed
+  avgTaskDuration: number; // actual vs estimated time
+  overdueItems: number;
+
+  // System health
+  systemHealth: 'excellent' | 'good' | 'fair' | 'poor';
+  healthScore: number; // 0-100
+  healthFactors: {
+    inboxEmpty: boolean;
+    projectsHaveNextActions: boolean;
+    lowOverdueItems: boolean;
+    regularReviews: boolean;
+  };
+}
+
+export interface WeeklyReviewData {
+  id: string;
+  weekStartDate: Date;
+  weekEndDate: Date;
+  completedAt: Date;
+  metrics: WeeklyReviewMetrics;
+  
+  // Review outcomes
+  wins: string[];
+  challenges: string[];
+  insights: string[];
+  nextWeekFocus: string;
+  
+  // GTD Areas reviewed
+  areasReviewed: {
+    inbox: boolean;
+    projects: boolean;
+    waitingFor: boolean;
+    somedayMaybe: boolean;
+    calendar: boolean;
+    contexts: boolean;
+  };
+  
+  notes: string;
+  duration: number; // minutes spent on review
+}
+
+export interface SystemHealthCheck {
+  timestamp: Date;
+  
+  // Core GTD health indicators
+  inboxHealth: {
+    count: number;
+    oldestItem: Date | null;
+    score: number; // 0-100
+  };
+  
+  projectHealth: {
+    total: number;
+    withNextActions: number;
+    stuck: number;
+    completed: number;
+    score: number; // 0-100
+  };
+  
+  actionHealth: {
+    total: number;
+    overdue: number;
+    completed: number;
+    averageAge: number; // days
+    score: number; // 0-100
+  };
+  
+  reviewHealth: {
+    lastReview: Date | null;
+    daysSinceReview: number;
+    onSchedule: boolean;
+    score: number; // 0-100
+  };
+  
+  overallHealth: {
+    score: number; // 0-100
+    grade: 'A' | 'B' | 'C' | 'D' | 'F';
+    recommendations: string[];
+  };
 }

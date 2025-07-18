@@ -4,6 +4,11 @@
 
 A comprehensive **Getting Things Done (GTD)** application implementing David Allen's complete methodology for achieving "Mind Like Water" - a state of relaxed control and mental clarity. Built with a modern **Cursor-style 3-column interface** that provides professional productivity tooling.
 
+## 📚 Documentation
+
+Detailed feature specifications and implementation guides can be found in the `docs/features` directory:
+- [Mind Sweep Implementation](docs/features/mind-sweep.md) - Complete guide for the GTD initial audit process
+
 ## ✅ Completed Features
 
 ### 🏗️ **Core Architecture**
